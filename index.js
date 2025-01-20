@@ -99,6 +99,20 @@ async function run() {
     })
 
     // My Apis...
+    // Get user data
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      try {
+        const user = await userCollection.findOne({ email: email });
+        if (!user) {
+          return res.status(404).send({ message: 'User not found' });
+        }
+        res.send(user);
+      } catch (err) {
+        res.status(500).send({ message: 'Internal server error', error: err });
+      }
+    });
+
     app.post('/users', async (req, res) => {
       const user = req.body;
       const query = { email: user.email }
