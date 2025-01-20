@@ -113,6 +113,25 @@ async function run() {
       }
     });
 
+    // Update user data
+    app.put('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const updatedUser = req.body;
+      try {
+        const result = await userCollection.updateOne(
+          { email: email },
+          { $set: updatedUser }
+        );
+        if (result.matchedCount === 0) {
+          return res.status(404).send({ message: 'User not found' });
+        }
+        res.send({ message: 'User updated successfully' });
+      } catch (err) {
+        console.log(err)
+        res.status(500).send({ message: 'Internal server error', error: err });
+      }
+    });
+
     app.post('/users', async (req, res) => {
       const user = req.body;
       const query = { email: user.email }
