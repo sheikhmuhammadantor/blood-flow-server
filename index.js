@@ -47,6 +47,7 @@ async function run() {
 
     // await client.connect();
     const userCollection = client.db("BloodFlow").collection("Users");
+    const donationCollection = client.db("BloodFlow").collection("Donation");
 
     // Generate jwt token
     app.post('/jwt', async (req, res) => {
@@ -105,7 +106,14 @@ async function run() {
       if (existingUser) {
         return res.send({ message: 'user already exists', insertedId: null })
       }
-      const result = await userCollection.insertOne({ ...user, role: 'donor' });
+      const result = await userCollection.insertOne({ ...user, role: 'donor', status: 'active' });
+      res.send(result);
+    });
+
+    // Create donate request
+    app.post('/create-donate-request', async (req, res) => {
+      const donateRequest = req.body;
+      const result = await donationCollection.insertOne({ ...donateRequest, donationStatus: 'pending' });
       res.send(result);
     });
 
