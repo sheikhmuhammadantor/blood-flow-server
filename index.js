@@ -186,6 +186,18 @@ async function run() {
       res.send(result);
     });
 
+    // get donor by filter query
+    app.get('/donors/search', async (req, res) => {
+      const { bloodGroup, district, upazila } = req.query;
+      const query = {};
+      if (bloodGroup) query.bloodGroup = bloodGroup;
+      if (district) query.district = district;
+      if (upazila) query.upazila = upazila;
+      if (Object.keys(query).length === 0) return res.send([]);
+      const donors = await userCollection.find(query).toArray();
+      res.send(donors);
+    });
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
