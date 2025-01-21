@@ -161,6 +161,15 @@ async function run() {
       res.send(requests);
     });
 
+    // Get all donation requests
+    app.get('/donation-requests', async (req, res) => {
+      const { donationStatus } = req.query;
+      const query = {};
+      if (donationStatus) query.donationStatus = donationStatus;
+      const requests = await donationCollection.find(query).toArray();
+      res.send(requests);
+    });
+
     // donation-request/:id delete
     app.delete('/donation-request/:id', async (req, res) => {
       const id = parseInt(req.params.id);
