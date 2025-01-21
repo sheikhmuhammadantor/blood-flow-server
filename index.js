@@ -217,6 +217,10 @@ async function run() {
     });
 
     // get funds
+    app.get('/funds', async (req, res) => {
+      const funds = await fundsCollection.find().toArray();
+      res.send(funds);
+    });
 
 
     // Send a ping to confirm a successful connection
