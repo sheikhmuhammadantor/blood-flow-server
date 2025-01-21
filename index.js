@@ -161,6 +161,13 @@ async function run() {
       res.send(requests);
     });
 
+    // donation-request/:id delete
+    app.delete('/donation-request/:id', async (req, res) => {
+      const id = parseInt(req.params.id);
+      const result = await donationCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
