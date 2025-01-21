@@ -48,6 +48,7 @@ async function run() {
     // await client.connect();
     const userCollection = client.db("BloodFlow").collection("Users");
     const donationCollection = client.db("BloodFlow").collection("Donation");
+    const fundsCollection = client.db("BloodFlow").collection("Funds");
 
     // Generate jwt token
     app.post('/jwt', async (req, res) => {
@@ -206,6 +207,16 @@ async function run() {
       const donors = await userCollection.find(query).toArray();
       res.send(donors);
     });
+
+    // funds
+    app.post('/funds', async (req, res) => {
+      const fund = req.body;
+      const result = await fundsCollection.insertOne(fund);
+      console.log(result);
+      res.send(result);
+    });
+
+    // get funds
 
 
     // Send a ping to confirm a successful connection
