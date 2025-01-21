@@ -150,6 +150,18 @@ async function run() {
       res.send(result);
     });
 
+    // Get donate requests by email & limit
+    app.get('/donation-request', async (req, res) => {
+      const email = req.query.email;
+      const limit = req.query.limit;
+      const query = {
+        requesterEmail: email
+      };
+      const requests = await donationCollection.find(query).limit(3).toArray();
+      res.send(requests);
+    });
+
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
