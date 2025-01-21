@@ -168,6 +168,13 @@ async function run() {
       res.send(result);
     });
 
+    // get donation-request/:id
+    app.get('/donation-request/:id', async (req, res) => {
+      const id = req.params.id;
+      const request = await donationCollection.findOne({ _id: new ObjectId(id) });
+      res.send(request);
+    });
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
