@@ -175,6 +175,17 @@ async function run() {
       res.send(request);
     });
 
+    // donation-request/:id update
+    app.put('/donation-request/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedRequest = req.body;
+      const result = await donationCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedRequest }
+      );
+      res.send(result);
+    });
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
