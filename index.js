@@ -171,6 +171,13 @@ async function run() {
       res.send(requests);
     });
 
+    // donation-request-all/:email
+    app.get('/my-all-donation-request/:email', async (req, res) => {
+      const email = req.params.email;
+      const requests = await donationCollection.find({ requesterEmail: email }).toArray();
+      res.send(requests);
+    });
+
     // donation-request/:id delete
     app.delete('/donation-request/:id', async (req, res) => {
       const id = parseInt(req.params.id);
