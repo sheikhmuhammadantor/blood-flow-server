@@ -222,6 +222,14 @@ async function run() {
       res.send(donors);
     });
 
+    // all-users get
+    app.get('/all-users', async (req, res) => {
+      const { status } = req.query;
+      const query = status ? { status } : {};
+      const users = await userCollection.find(query).toArray();
+      res.send(users);
+    });
+
     // funds
     app.post('/funds', async (req, res) => {
       const fund = req.body;
