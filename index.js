@@ -171,6 +171,12 @@ async function run() {
       res.send(requests);
     });
 
+    // Get all donation requests;
+    app.get('/all-blood-donation-request', async (req, res) => {
+      const requests = await donationCollection.find().toArray();
+      res.send(requests);
+    });
+
     // donation-request-all/:email
     app.get('/my-all-donation-request/:email', async (req, res) => {
       const email = req.params.email;
@@ -180,8 +186,9 @@ async function run() {
 
     // donation-request/:id delete
     app.delete('/donation-request/:id', async (req, res) => {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const result = await donationCollection.deleteOne({ _id: new ObjectId(id) });
+      console.log(result);
       res.send(result);
     });
 
