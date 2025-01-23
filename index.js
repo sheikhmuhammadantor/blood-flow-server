@@ -59,35 +59,37 @@ async function run() {
       })
       res
         .cookie('token', token, cookieOptions)
-        .send({ success: true })
+        .send({ success: true, token })
     })
 
-    // // use verify token/user after verifyToken
-    // const verifyToken = (req, res, next) => {
-    //   if (!req.headers.authorization) {
-    //     return res.status(401).send({ message: 'unauthorized access' });
-    //   }
-    //   const token = req.headers.authorization.split(' ')[1];
-    //   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    //     if (err) {
-    //       return res.status(401).send({ message: 'unauthorized access' })
-    //     }
-    //     req.decoded = decoded;
-    //     next();
-    //   })
-    // }
+    // use verify token/user after verifyToken
+    const verifyToken = (req, res, next) => {
+      if (!req.headers.authorization) {
+        console.log('no authorization header');
+        return res.status(401).send({ message: 'unauthorized access' });
+      }
+      const token = req.headers.authorization;
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          console.log('jwt verify error',);
+          return res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.decoded = decoded;
+        next();
+      })
+    }
 
     // // use verify admin after verifyToken
-    // const verifyAdmin = async (req, res, next) => {
-    //   const email = req.decoded.email;
-    //   const query = { email: email };
-    //   const user = await userCollection.findOne(query);
-    //   const isAdmin = user?.role === 'admin';
-    //   if (!isAdmin) {
-    //     return res.status(403).send({ message: 'forbidden access' });
-    //   }
-    //   next();
-    // }
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
 
     // Logout
     app.get('/logout', async (req, res) => {
@@ -231,18 +233,19 @@ async function run() {
       res.send(users);
     });
 
+    // get funds
+    app.get('/funds', verifyToken, verifyAdmin, async (req, res) => {
+      console.log('hi');
+      const funds = await fundsCollection.find().toArray();
+      res.send(funds);
+    });
+
     // funds
     app.post('/funds', async (req, res) => {
       const fund = req.body;
       const result = await fundsCollection.insertOne(fund);
       console.log(result);
       res.send(result);
-    });
-
-    // get funds
-    app.get('/funds', async (req, res) => {
-      const funds = await fundsCollection.find().toArray();
-      res.send(funds);
     });
 
     // get blogs;
