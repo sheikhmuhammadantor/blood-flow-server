@@ -245,10 +245,25 @@ async function run() {
       res.send(funds);
     });
 
+    // get blogs;
+    app.get('/blogs', async (req, res) => {
+      const { status } = req.query;
+      const query = status ? { status } : {};
+      const blogs = await blogCollection.find(query).toArray();
+      res.send(blogs);
+    });
+
     // Post a blog;
     app.post('/blogs', async (req, res) => {
       const blog = req.body;
       const result = await blogCollection.insertOne({ ...blog, status: 'draft' });
+      res.send(result);
+    });
+
+    // delete blog;
+    app.delete('/blog/:id', async (req, res) => {
+      const id = req.params.id;
+      const result = await blogCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
