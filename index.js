@@ -49,6 +49,7 @@ async function run() {
     const userCollection = client.db("BloodFlow").collection("Users");
     const donationCollection = client.db("BloodFlow").collection("Donation");
     const fundsCollection = client.db("BloodFlow").collection("Funds");
+    const blogCollection = client.db("BloodFlow").collection("Blogs");
 
     // Generate jwt token
     app.post('/jwt', async (req, res) => {
@@ -244,6 +245,12 @@ async function run() {
       res.send(funds);
     });
 
+    // Post a blog;
+    app.post('/blogs', async (req, res) => {
+      const blog = req.body;
+      const result = await blogCollection.insertOne({ ...blog, status: 'draft' });
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
