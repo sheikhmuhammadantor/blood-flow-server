@@ -25,13 +25,11 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(morgan('dev'))
 
-const cookieOptions = {
-  maxAge: 0,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-}
-
-// middlewares 
+// const cookieOptions = {
+//   maxAge: 0,
+//   secure: process.env.NODE_ENV === 'production',
+//   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+// }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nw7sq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
@@ -55,11 +53,9 @@ async function run() {
     app.post('/jwt', async (req, res) => {
       const email = req.body
       const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '365d',
+        expiresIn: '1d',
       })
-      res
-        .cookie('token', token, cookieOptions)
-        .send({ success: true, token })
+      res.send({ success: true, token })
     })
 
     // use verify token/user after verifyToken
@@ -79,7 +75,7 @@ async function run() {
       })
     }
 
-    // // use verify admin after verifyToken
+    // use verify admin after verifyToken
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
@@ -91,12 +87,22 @@ async function run() {
       next();
     }
 
+    // use verify Volunteer after verifyToken
+    const verifyVolunteer = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === 'volunteer';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
+
     // Logout
     app.get('/logout', async (req, res) => {
       try {
-        res
-          .clearCookie('token', cookieOptions)
-          .send({ success: true })
+        res.send({ success: true })
       } catch (err) {
         res.status(500).send(err)
       }
@@ -234,7 +240,7 @@ async function run() {
     });
 
     // get funds
-    app.get('/funds', verifyToken, verifyAdmin, async (req, res) => {
+    app.get('/funds', verifyToken, async (req, res) => {
       console.log('hi');
       const funds = await fundsCollection.find().toArray();
       res.send(funds);
