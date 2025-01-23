@@ -267,6 +267,18 @@ async function run() {
       res.send(result);
     });
 
+    // patch blog status;
+    app.patch('/blogs/:id', async (req, res) => {
+      const id = req.params.id;
+      const status = req.body.status;
+      const result = await blogCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status } }
+      );
+      res.send(result);
+    });
+
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
