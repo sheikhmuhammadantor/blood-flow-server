@@ -249,7 +249,16 @@ async function run() {
       res.send({ count });
     });
 
-    // /user/${id}/status patch request for user status update by admin only ;
+    // patch request for user status update by admin only ;
+    app.patch('/user/:id/status', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const status = req.body.status;
+      const result = await userCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status } }
+      );
+      res.send(result);
+    });
 
     // get funds
     app.get('/funds', verifyToken, async (req, res) => {
