@@ -260,6 +260,17 @@ async function run() {
       res.send(result);
     });
 
+    // patch request for user role update by admin only ;
+    app.patch('/user/:id/role', verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const role = req.body.role;
+      const result = await userCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { role } }
+      );
+      res.send(result);
+    });
+
     // get funds
     app.get('/funds', verifyToken, async (req, res) => {
       console.log('hi');
