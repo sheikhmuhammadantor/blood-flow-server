@@ -1,7 +1,7 @@
 require('dotenv').config({ path: '.env.local' });
 const express = require('express')
 const cors = require('cors')
-const cookieParser = require('cookie-parser')
+// const cookieParser = require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const jwt = require('jsonwebtoken')
 const morgan = require('morgan')
@@ -22,7 +22,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 app.use(express.json())
-app.use(cookieParser())
+// app.use(cookieParser())
 app.use(morgan('dev'))
 
 // const cookieOptions = {
@@ -234,9 +234,17 @@ async function run() {
     // all-users get
     app.get('/all-users', async (req, res) => {
       const { status } = req.query;
+      const skip = parseInt(req.query.skip) || 0;
+      const limit = parseInt(req.query.limit) || 0;
       const query = status ? { status } : {};
-      const users = await userCollection.find(query).toArray();
+      const users = await userCollection.find(query).skip(skip).limit(limit).toArray();
       res.send(users);
+    });
+
+    // only total user count
+    app.get('/all-users-count', async (req, res) => {
+      const count = await userCollection.estimatedDocumentCount();
+      res.send({ count });
     });
 
     // get funds
@@ -286,7 +294,6 @@ async function run() {
       );
       res.send(result);
     });
-
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
