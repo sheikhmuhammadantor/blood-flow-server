@@ -91,6 +91,18 @@ async function run() {
       next();
     }
 
+    // verify active user;
+    const verifyActive = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isActive = user?.status === 'active';
+      if (!isActive) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
+
     // Logout
     app.get('/logout', async (req, res) => {
       try {
@@ -146,7 +158,7 @@ async function run() {
     });
 
     // Create donate request
-    app.post('/create-donate-request', async (req, res) => {
+    app.post('/create-donate-request', verifyToken, verifyActive, async (req, res) => {
       const donateRequest = req.body;
       const result = await donationCollection.insertOne({ ...donateRequest, donationStatus: 'pending' });
       res.send(result);
