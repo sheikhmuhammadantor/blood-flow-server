@@ -243,9 +243,13 @@ async function run() {
 
     // only total user count
     app.get('/all-users-count', async (req, res) => {
-      const count = await userCollection.estimatedDocumentCount();
+      const { status } = req.query;
+      const query = status ? { status } : {};
+      const count = await userCollection.countDocuments(query);
       res.send({ count });
     });
+
+    // /user/${id}/status patch request for user status update by admin only ;
 
     // get funds
     app.get('/funds', verifyToken, async (req, res) => {
