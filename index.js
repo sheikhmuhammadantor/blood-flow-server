@@ -1,7 +1,6 @@
 require('dotenv').config({ path: '.env.local' });
 const express = require('express')
 const cors = require('cors')
-// const cookieParser = require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const jwt = require('jsonwebtoken')
 const morgan = require('morgan')
@@ -22,14 +21,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 app.use(express.json())
-// app.use(cookieParser())
 app.use(morgan('dev'))
-
-// const cookieOptions = {
-//   maxAge: 0,
-//   secure: process.env.NODE_ENV === 'production',
-//   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-// }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nw7sq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
@@ -299,6 +291,13 @@ async function run() {
       const blog = req.body;
       const result = await blogCollection.insertOne({ ...blog, status: 'draft' });
       res.send(result);
+    });
+
+    // get blog by id;
+    app.get('/blogs/:id', async (req, res) => {
+      const id = req.params.id;
+      const blog = await blogCollection.findOne({ _id: new ObjectId(id) });
+      res.send(blog);
     });
 
     // delete blog;
