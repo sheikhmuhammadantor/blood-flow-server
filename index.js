@@ -300,7 +300,7 @@ async function run() {
 
     // get blogs-published;
     app.get('/blogs-published', async (req, res) => {
-      const query = {status: 'published'};
+      const query = { status: 'published' };
       const blogs = await blogCollection.find(query).toArray();
       res.send(blogs);
     });
@@ -335,6 +335,43 @@ async function run() {
         { $set: { status } }
       );
       res.send(result);
+    });
+
+    // Form admin Only - Dashboard Home;
+    // all user count -
+    app.get("/admin/users/count", async (req, res) => {
+      try {
+        const userCount = await userCollection.countDocuments();
+        res.send({ count: userCount });
+      } catch (error) {
+        console.error("Error fetching user count:", error);
+        res.status(500).send({ error: "Failed to fetch user count" });
+      }
+    });
+
+    // total funding count -
+    app.get("/admin/funding/total", async (req, res) => {
+      try {
+        const totalFunding = await fundsCollection.aggregate([
+          { $group: { _id: null, total: { $sum: { $toDouble: "$fundAmount" } } } }
+        ]).toArray();
+
+        res.send({ total: totalFunding[0]?.total || 0 });
+      } catch (error) {
+        console.error("Error fetching total funding:", error);
+        res.status(500).send({ error: "Failed to fetch total funding" });
+      }
+    });
+
+    // all donation-request count -
+    app.get("/admin/blood-requests/count", async (req, res) => {
+      try {
+        const requestCount = await donationCollection.countDocuments();
+        res.send({ count: requestCount });
+      } catch (error) {
+        console.error("Error fetching blood request count:", error);
+        res.status(500).send({ error: "Failed to fetch blood request count" });
+      }
     });
 
     // Send a ping to confirm a successful connection
