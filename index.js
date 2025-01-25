@@ -84,7 +84,7 @@ async function run() {
       const email = req.decoded.email;
       const query = { email: email };
       const user = await userCollection.findOne(query);
-      const isAdmin = user?.role === 'volunteer';
+      const isAdmin = user?.role === 'volunteer' || user?.role === 'admin';
       if (!isAdmin) {
         return res.status(403).send({ message: 'forbidden access' });
       }
@@ -291,9 +291,16 @@ async function run() {
     });
 
     // get blogs;
-    app.get('/blogs', async (req, res) => {
+    app.get('/blogs', verifyToken, verifyVolunteer, async (req, res) => {
       const { status } = req.query;
       const query = status ? { status } : {};
+      const blogs = await blogCollection.find(query).toArray();
+      res.send(blogs);
+    });
+
+    // get blogs-published;
+    app.get('/blogs-published', async (req, res) => {
+      const query = {status: 'published'};
       const blogs = await blogCollection.find(query).toArray();
       res.send(blogs);
     });
@@ -313,14 +320,14 @@ async function run() {
     });
 
     // delete blog;
-    app.delete('/blog/:id', async (req, res) => {
+    app.delete('/blog/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const result = await blogCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
     // patch blog status;
-    app.patch('/blogs/:id', async (req, res) => {
+    app.patch('/blogs/:id', verifyToken, verifyVolunteer, async (req, res) => {
       const id = req.params.id;
       const status = req.body.status;
       const result = await blogCollection.updateOne(
