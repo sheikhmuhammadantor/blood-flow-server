@@ -212,15 +212,28 @@ async function run() {
       res.send(request);
     });
 
-    // donation-request/:id update
+    // donation-request/:id update with put;
+
     app.put('/donation-request/:id', async (req, res) => {
       const id = req.params.id;
-      const updatedRequest = req.body;
+      const {donationStatus, donorEmail, donorName} = req.body;
       const result = await donationCollection.updateOne(
         { _id: new ObjectId(id) },
-        { $set: updatedRequest }
+        { $set: {donationStatus, donorEmail, donorName} }
       );
       res.send(result);
+    });
+
+    // donation-request/:id update with patch;
+    app.patch('/donation-requests/:id', async (req, res) => {
+      const id = req.params.id;
+      const {a , ...updateData} = req.body;
+      console.log(updateData);
+      // const result = await donationCollection.updateOne(
+      //   { _id: new ObjectId(id) },
+      //   { $set: updateData }
+      // );
+      res.send('result');
     });
 
     // get donor by filter query
