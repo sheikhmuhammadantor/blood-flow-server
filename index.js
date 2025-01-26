@@ -194,7 +194,10 @@ async function run() {
     // donation-request-all/:email
     app.get('/my-all-donation-request/:email', async (req, res) => {
       const email = req.params.email;
-      const requests = await donationCollection.find({ requesterEmail: email }).toArray();
+      const { filter } = req.query;
+      const query = { requesterEmail: email };
+      if(filter) query.donationStatus = filter;
+      const requests = await donationCollection.find(query).toArray();
       res.send(requests);
     });
 
@@ -202,7 +205,6 @@ async function run() {
     app.delete('/donation-request/:id', async (req, res) => {
       const id = req.params.id;
       const result = await donationCollection.deleteOne({ _id: new ObjectId(id) });
-      console.log(result);
       res.send(result);
     });
 
@@ -218,9 +220,12 @@ async function run() {
     app.put('/donation-request/:id', async (req, res) => {
       const id = req.params.id;
       const { donationStatus, donorEmail, donorName } = req.body;
+      const updatedData = { donationStatus };
+      if (donorEmail) updatedData.donorEmail = donorEmail;
+      if (donorEmail) updatedData.donorName = donorName;
       const result = await donationCollection.updateOne(
         { _id: new ObjectId(id) },
-        { $set: { donationStatus, donorEmail, donorName } }
+        { $set: updatedData }
       );
       res.send(result);
     });
@@ -228,13 +233,12 @@ async function run() {
     // donation-request/:id update with patch;
     app.patch('/donation-requests/:id', async (req, res) => {
       const id = req.params.id;
-      const { a, ...updateData } = req.body;
-      console.log(updateData);
-      // const result = await donationCollection.updateOne(
-      //   { _id: new ObjectId(id) },
-      //   { $set: updateData }
-      // );
-      res.send('result');
+      const { _id, requesterName, requesterEmail, donationStatus, donorEmail, donorName, ...updateData } = req.body;
+      const result = await donationCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateData }
+      );
+      res.send(result);
     });
 
     // get donor by filter query
@@ -291,9 +295,17 @@ async function run() {
 
     // get funds
     app.get('/funds', verifyToken, async (req, res) => {
-      const funds = await fundsCollection.find().toArray();
+      const skip = parseInt(req.query.skip) || 0;
+      const limit = parseInt(req.query.limit) || 0;
+      const funds = await fundsCollection.find().skip(skip).limit(limit).toArray();
       res.send(funds);
     });
+
+    // get total Funds Count;
+    app.get('/founds-counts', async (req, res) => {
+      const count = await fundsCollection.estimatedDocumentCount();
+      res.send({ count });
+    })
 
     // funds
     app.post('/funds', async (req, res) => {
@@ -369,7 +381,7 @@ async function run() {
         const userCount = await userCollection.countDocuments();
         res.send({ count: userCount });
       } catch (error) {
-        console.error("Error fetching user count:", error);
+        console.log("Error fetching user count:", error);
         res.status(500).send({ error: "Failed to fetch user count" });
       }
     });
@@ -383,7 +395,7 @@ async function run() {
 
         res.send({ total: totalFunding[0]?.total || 0 });
       } catch (error) {
-        console.error("Error fetching total funding:", error);
+        console.log("Error fetching total funding:", error);
         res.status(500).send({ error: "Failed to fetch total funding" });
       }
     });
@@ -394,7 +406,7 @@ async function run() {
         const requestCount = await donationCollection.countDocuments();
         res.send({ count: requestCount });
       } catch (error) {
-        console.error("Error fetching blood request count:", error);
+        console.log("Error fetching blood request count:", error);
         res.status(500).send({ error: "Failed to fetch blood request count" });
       }
     });
