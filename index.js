@@ -3,7 +3,8 @@ const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const jwt = require('jsonwebtoken')
-const morgan = require('morgan')
+const morgan = require('morgan');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const port = process.env.PORT || 3000
 const app = express()
@@ -216,10 +217,10 @@ async function run() {
 
     app.put('/donation-request/:id', async (req, res) => {
       const id = req.params.id;
-      const {donationStatus, donorEmail, donorName} = req.body;
+      const { donationStatus, donorEmail, donorName } = req.body;
       const result = await donationCollection.updateOne(
         { _id: new ObjectId(id) },
-        { $set: {donationStatus, donorEmail, donorName} }
+        { $set: { donationStatus, donorEmail, donorName } }
       );
       res.send(result);
     });
@@ -227,7 +228,7 @@ async function run() {
     // donation-request/:id update with patch;
     app.patch('/donation-requests/:id', async (req, res) => {
       const id = req.params.id;
-      const {a , ...updateData} = req.body;
+      const { a, ...updateData } = req.body;
       console.log(updateData);
       // const result = await donationCollection.updateOne(
       //   { _id: new ObjectId(id) },
@@ -290,7 +291,6 @@ async function run() {
 
     // get funds
     app.get('/funds', verifyToken, async (req, res) => {
-      console.log('hi');
       const funds = await fundsCollection.find().toArray();
       res.send(funds);
     });
@@ -299,8 +299,20 @@ async function run() {
     app.post('/funds', async (req, res) => {
       const fund = req.body;
       const result = await fundsCollection.insertOne(fund);
-      console.log(result);
       res.send(result);
+    });
+
+    // payment intent
+    app.post('/create-payment-intent', async (req, res) => {
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: parseInt(amount * 100),
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
     });
 
     // get blogs;
