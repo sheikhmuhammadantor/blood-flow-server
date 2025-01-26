@@ -185,19 +185,44 @@ async function run() {
       res.send(requests);
     });
 
+    // all donation request count ;
+    app.get('/all-donation-count', async (req, res) => {
+      const { status } = req.query;
+      const query = {}
+      if (status) query.donationStatus = status;
+      const count = await donationCollection.countDocuments(query);
+      res.send({ count });
+    });
+
     // Get all donation requests;
     app.get('/all-blood-donation-request', async (req, res) => {
-      const requests = await donationCollection.find().toArray();
+      const { filter } = req.query;
+      const query = {};
+      if (filter) query.donationStatus = filter;
+      const skip = parseInt(req.query.skip) || 0;
+      const limit = parseInt(req.query.limit) || 0;
+      const requests = await donationCollection.find(query).skip(skip).limit(limit).toArray();
       res.send(requests);
     });
 
-    // donation-request-all/:email
+    // all-my-donation-count;
+    app.get('/all-my-donation-count', async (req, res) => {
+      const { status, email } = req.query;
+      const query = { requesterEmail: email }
+      if (status) query.donationStatus = status;
+      const count = await donationCollection.countDocuments(query);
+      res.send({ count });
+    });
+
+    // donation-request-all-my/:email
     app.get('/my-all-donation-request/:email', async (req, res) => {
       const email = req.params.email;
       const { filter } = req.query;
       const query = { requesterEmail: email };
-      if(filter) query.donationStatus = filter;
-      const requests = await donationCollection.find(query).toArray();
+      if (filter) query.donationStatus = filter;
+      const skip = parseInt(req.query.skip) || 0;
+      const limit = parseInt(req.query.limit) || 0;
+      const requests = await donationCollection.find(query).skip(skip).limit(limit).toArray();
       res.send(requests);
     });
 
@@ -378,7 +403,7 @@ async function run() {
     // all user count -
     app.get("/admin/users/count", async (req, res) => {
       try {
-        const userCount = await userCollection.countDocuments();
+        const userCount = await userCollection.countDocuments({ role: 'donor' });
         res.send({ count: userCount });
       } catch (error) {
         console.log("Error fetching user count:", error);
