@@ -57,11 +57,11 @@
 ## Installation and Setup:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Programming-Hero-Web-Course4/b10a12-server-side-sheikhmuhammadantor
+   git clone https://github.com/sheikhmuhammadantor/blood-flow-server
    ```
 2. Navigate to the project directory:
    ```bash
-   cd b10a12-server-side-sheikhmuhammadantor
+   cd blood-flow-server
    ```
 3. Install dependencies:
    ```bash
