@@ -194,16 +194,54 @@ async function run() {
       res.send({ count });
     });
 
-    // Get all donation requests;
+    // // Get all donation requests;
+    // app.get('/all-blood-donation-request', async (req, res) => {
+    //   const { filter, sort } = req.query;
+    //   const query = {};
+    //   const sorting = {};
+    //   if (filter) query.donationStatus = filter;
+    //   if (sort) sorting.createdAt = (sort === 'asc' ? 1 : -1);
+    //   const skip = parseInt(req.query.skip) || 0;
+    //   const limit = parseInt(req.query.limit) || 0;
+    //   const requests = await donationCollection.find(query).sort(sorting).skip(skip).limit(limit).toArray();
+    //   res.send(requests);
+    //   // const requests = await donationCollection.find(query).skip(skip).limit(limit).toArray();
+    //   // res.send(requests);
+    // });
+
     app.get('/all-blood-donation-request', async (req, res) => {
-      const { filter } = req.query;
-      const query = {};
-      if (filter) query.donationStatus = filter;
-      const skip = parseInt(req.query.skip) || 0;
-      const limit = parseInt(req.query.limit) || 0;
-      const requests = await donationCollection.find(query).skip(skip).limit(limit).toArray();
-      res.send(requests);
+      try {
+        const { filter, sort, skip, limit } = req.query;
+
+        // Building query object
+        const query = {};
+        if (filter) query.donationStatus = filter;
+
+        // Sorting logic
+        const sorting = {};
+        if (sort === 'asc' || sort === 'desc') {
+          sorting.donationDate = sort === 'asc' ? 1 : -1;
+        }
+
+        // Ensure skip and limit are valid numbers
+        const skipValue = Number(skip) >= 0 ? Number(skip) : 0;
+        const limitValue = Number(limit) > 0 ? Number(limit) : 0;
+
+        // Fetch data from MongoDB
+        const requests = await donationCollection
+          .find(query)
+          .sort(sorting)
+          .skip(skipValue)
+          .limit(limitValue)
+          .toArray();
+
+        res.status(200).send(requests);
+      } catch (error) {
+        console.error("Error fetching donation requests:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
     });
+
 
     // all-my-donation-count;
     app.get('/all-my-donation-count', async (req, res) => {
