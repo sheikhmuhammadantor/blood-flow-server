@@ -176,14 +176,43 @@ async function run() {
       res.send(requests);
     });
 
-    // Get all donation requests
+    // // Get all donation requests
+    // app.get('/donation-requests', async (req, res) => {
+    //   const { donationStatus } = req.query;
+    //   const sort = {};
+    //   const query = {};
+    //   if (donationStatus) query.donationStatus = donationStatus;
+    //   const requests = await donationCollection.find(query).toArray();
+    //   res.send(requests);
+    // });
+
     app.get('/donation-requests', async (req, res) => {
-      const { donationStatus } = req.query;
-      const query = {};
-      if (donationStatus) query.donationStatus = donationStatus;
-      const requests = await donationCollection.find(query).toArray();
-      res.send(requests);
+      try {
+        const { donationStatus, sort } = req.query;
+
+        // Building query object
+        const query = {};
+        if (donationStatus) query.donationStatus = donationStatus;
+
+        // Sorting logic
+        const sorting = {};
+        if (sort === 'asc' || sort === 'desc') {
+          sorting.donationDate = sort === 'asc' ? 1 : -1;
+        }
+
+        // Fetch data from MongoDB
+        const requests = await donationCollection
+          .find(query)
+          .sort(sorting)
+          .toArray();
+
+        res.status(200).json(requests);
+      } catch (error) {
+        console.error("Error fetching donation requests:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
     });
+
 
     // all donation request count ;
     app.get('/all-donation-count', async (req, res) => {
@@ -485,7 +514,7 @@ async function run() {
 run().catch(console.dir)
 
 app.get('/', (req, res) => {
-  res.send('Hello from BloodFlow Server..')
+  res.send('Hello from BloodFlow Server...')
 })
 
 app.listen(port, () => {
